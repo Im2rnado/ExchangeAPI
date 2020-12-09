@@ -28,7 +28,7 @@ app.get("/currency", function(req, res) {
 			const parsed = JSON.parse(data);
 			res.setHeader("Content-Type", "application/json");
 			res.status(200).send(JSON.stringify({
-				from: parsed.query.from.
+				from: parsed.query.from,
 				to: parsed.query.to,
 				rates: parsed.result,
 			}, null, 3));
