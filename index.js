@@ -7,7 +7,7 @@ require("dotenv").config();
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms"));
 
 app.get("/", function(req, res) {
-	const endpoints = ["/currency/gbp", "/currency/usd"];
+	const endpoints = ["/currency?from=<currency>&to=<currency>", "/currency/gbp", "/currency/usd"];
 	res.status(200).send(JSON.stringify({
 		name: "ExchangeAPI",
 		version: "v1.0.0",
@@ -18,7 +18,7 @@ app.get("/", function(req, res) {
 
 app.get("/currency", function(req, res) {
 	const options = {
-		url: `http://data.fixer.io/api/convert?access_key=b772106d3bf69b65246d76bd90dd8988&from=${req.query.from}&to=${req.query.to}&amount=1`,
+		url: `https://api.exchangerate.host/convert?from=${req.query.from}&to=${req.query.to}`,
 	};
 	request(options, (err, response, data) => {
 		if (err) {
@@ -26,10 +26,11 @@ app.get("/currency", function(req, res) {
 		}
 		else {
 			const parsed = JSON.parse(data);
-			console.log(parsed)
 			res.setHeader("Content-Type", "application/json");
 			res.status(200).send(JSON.stringify({
-				rates: parsed,
+				from: parsed.query.from.
+				to: parsed.query.to,
+				rates: parsed.result,
 			}, null, 3));
 		}
 	});
@@ -37,7 +38,7 @@ app.get("/currency", function(req, res) {
 
 app.get("/currency/gbp", function(req, res) {
 	const options = {
-		url: "http://data.fixer.io/api/latest?access_key=b772106d3bf69b65246d76bd90dd8988&format=1",
+		url: "https://api.exchangerate.host/latest",
 	};
 	request(options, (err, response, data) => {
 		if (err) {
@@ -62,17 +63,31 @@ app.get("/currency/gbp", function(req, res) {
 	});
 });
 
-app.get("/currency/dollar", function(req, res) {
-	const all = [];
-	all.push({
-		currency: "EGP",
-		rate: null,
+app.get("/currency/usd", function(req, res) {
+	const options = {
+		url: "https://api.exchangerate.host/latest?base=USD",
+	};
+	request(options, (err, response, data) => {
+		if (err) {
+			console.log(err);
+		}
+		else {
+			const all = [];
+			const parsed = JSON.parse(data);
+			const keys = Object.keys(parsed.rates);
+			keys.forEach((el, index) => {
+				all.push({
+					currency: el,
+					rate: parsed.rates[el],
+				});
+			});
+			res.setHeader("Content-Type", "application/json");
+			res.status(200).send(JSON.stringify({
+				base: "USD",
+				rates: all,
+			}, null, 3));
+		}
 	});
-	res.setHeader("Content-Type", "application/json");
-	res.status(200).send(JSON.stringify({
-		base: "USD",
-		rates: all,
-	}, null, 3));
 });
 
 app.disable("etag");
