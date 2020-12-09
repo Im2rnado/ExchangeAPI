@@ -17,6 +17,15 @@ app.get("/", function(req, res) {
 });
 
 app.get("/currency", function(req, res) {
+	if (!req.query.from || !req.query.to) {
+		return res.status(400).send(JSON.stringify({
+			errorCode: "errors.com.exchange-ratess.bad_request",
+			errorMessage: "from: formParam is required, to: formParam is required",
+			numericErrorCode: 1001,
+			originatingService: "unknown",
+			intent: "prod"
+		}, null, 3));
+	}
 	const options = {
 		url: `https://api.exchangerate.host/convert?from=${req.query.from}&to=${req.query.to}`,
 	};
