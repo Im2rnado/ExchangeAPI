@@ -16,6 +16,25 @@ app.get("/", function(req, res) {
 	}, null, 3));
 });
 
+app.get("/currency", function(req, res) {
+	const options = {
+		url: `http://data.fixer.io/api/convert?access_key=b772106d3bf69b65246d76bd90dd8988&from=${req.query.from}&to=${req.query.to}&amount=1`,
+	};
+	request(options, (err, response, data) => {
+		if (err) {
+			console.log(err);
+		}
+		else {
+			const parsed = JSON.parse(data);
+			console.log(parsed)
+			res.setHeader("Content-Type", "application/json");
+			res.status(200).send(JSON.stringify({
+				rates: parsed,
+			}, null, 3));
+		}
+	});
+});
+
 app.get("/currency/gbp", function(req, res) {
 	const options = {
 		url: "http://data.fixer.io/api/latest?access_key=b772106d3bf69b65246d76bd90dd8988&format=1",
